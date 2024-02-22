@@ -127,16 +127,16 @@ class Parser
     private void CountBrackets(string code)
     {
         operators["()"] = 0;
-        Regex reg = new Regex(@"(\S*)( *)(\()");
-        Regex onlyBrackets = new Regex(@"[ \W]?\(+");
+        Regex reg = new Regex(@"(\S*)( *)(\(+)");
+        Regex onlyBrackets = new Regex(@"^\(+$");
         foreach (Match item in reg.Matches(code))
         {
             var bebra = item.Groups[1].Value;
+            Console.WriteLine($"----------- {bebra}");
             if (bebra == "" || allOperators.Contains(bebra) || onlyBrackets.IsMatch(bebra))
             {
                 Console.WriteLine($"=========== {item.Value}");
-                Console.WriteLine($"----------- {bebra}");
-                operators["()"]++;
+                operators["()"] += item.Groups[3].Length;
             }
 
         }
