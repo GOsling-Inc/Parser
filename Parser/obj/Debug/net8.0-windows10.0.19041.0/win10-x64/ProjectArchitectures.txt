@@ -1,0 +1,1 @@
+D:\LabsC#\parser\Parser\Parser.csproj;x64
