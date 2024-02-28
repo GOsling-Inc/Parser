@@ -5,25 +5,19 @@ using System.Collections.Immutable;
 
 namespace Parser;
 
-public class Item
+public class Item(string index, string name, string count)
 {
-    public string Index { get; set; }
-    public string Name { get; set; }
-    public string Count { get; set; }
-    public Item(string index, string name, string count)
-    {
-        Name = name;
-        Index = index;
-        Count = count;
-    }
+    public string Index { get; set; } = index;
+    public string Name { get; set; } = name;
+    public string Count { get; set; } = count;
 }
 
 class Parser
 {
-    string[] allOperators = [";", ".", "+", "-", "*", "/", "%", "**", "==", "!=", ">", "<", ">=", "<=", "&&", "||", "!", "&", "|", "=", "+=", "-=", "*=", "/=", "%=", "**=", "<<=", ">>=", "&=", "^=", "|=", "^", "<<", ">>", "~", ">>>"];
-    string[] keyWords = ["case", "def", "do", "extends", "for", "forSome", "if", "import", "lazy", "match", "new", "package", "return", "sealed", "throw", "try", "type", "val", "var", "while", "with", "yield"];
-    Dictionary<string, int> operators = new();
-    Dictionary<string, int> operands = new();
+    readonly string[] allOperators = [";", ".", "+", "-", "*", "/", "%", "**", "==", "!=", ">", "<", ">=", "<=", "&&", "||", "!", "&", "|", "=", "+=", "-=", "*=", "/=", "%=", "**=", "<<=", ">>=", "&=", "^=", "|=", "^", "<<", ">>", "~", ">>>"];
+    readonly string[] keyWords = ["case", "def", "do", "extends", "for", "forSome", "if", "import", "lazy", "match", "new", "package", "return", "sealed", "throw", "try", "type", "val", "var", "while", "with", "yield"];
+    readonly Dictionary<string, int> operators = [];
+    readonly Dictionary<string, int> operands = [];
     public List<List<Item>> ParseScala(string code)
     {
         Console.WriteLine(code);
@@ -41,25 +35,58 @@ class Parser
 
 
 
-        var op1 = new List<Item>();
-        op1.Add(new Item("индекс", "оператор", "количество"));
-        var newoperators = from entry in operators orderby entry.Value descending select entry;
-        for (int i = 0; i < newoperators.Count(); i++)
+        var op1 = new List<Item>
         {
-            if (newoperators.ElementAt(i).Value > 0) op1.Add(new Item((i+1).ToString(), newoperators.ElementAt(i).Key, newoperators.ElementAt(i).Value.ToString()));
-        }
-
-        var op2 = new List<Item>();
-        op2.Add(new Item("индекс", "операнд", "количество"));
+            new("индекс", "оператор", "количество")
+        };
+        var newoperators = from entry in operators orderby entry.Value descending select entry;
+        int counter = 0, prog_dict = 0, prog_len = 0;
+        for (int i = 0; i < newoperators.Count(); i++)
+            if (newoperators.ElementAt(i).Value > 0)
+            {
+                op1.Add(new Item((i + 1).ToString(), newoperators.ElementAt(i).Key, newoperators.ElementAt(i).Value.ToString()));
+                counter += newoperators.ElementAt(i).Value;
+            }
+        prog_dict += newoperators.Count();
+        prog_len += counter;
+        var statOperators = new Item($"n1 = {newoperators.Count()}", "", $"N1 = {counter}");
+        counter = 0;
+        var op2 = new List<Item>
+        {
+            new("индекс", "операнд", "количество")
+        };
         var newoperands = from entry in operands orderby entry.Value descending select entry;
         for (int i = 0; i < newoperands.Count(); i++)
-        {
-            if (newoperands.ElementAt(i).Value > 0) op2.Add(new Item((i+1).ToString(), newoperands.ElementAt(i).Key, newoperands.ElementAt(i).Value.ToString()));
-        }
-        return new List<List<Item>> { op1, op2 };
+            if (newoperands.ElementAt(i).Value > 0)
+            {
+                op2.Add(new Item((i + 1).ToString(), newoperands.ElementAt(i).Key, newoperands.ElementAt(i).Value.ToString()));
+                counter += newoperands.ElementAt(i).Value;
+            }
+        prog_dict += newoperands.Count();
+        prog_len += counter;
+        var statOperands = new Item($"n2 = {newoperands.Count()}", "", $"N2 = {counter}");
+        var lists = SameLen(op1, op2);
+        op1 = lists[0];
+        op1.Add(statOperators);
+        op2 = lists[1];
+        op2.Add(statOperands);
+        return [op1, op2, [new Item(prog_dict.ToString(), prog_len.ToString(), (prog_len*Math.Log2(prog_dict)).ToString())]];
     }
 
-    private string RemoveStrings(string code)
+    private static List<List<Item>> SameLen(List<Item> op1, List<Item> op2)
+    {
+        if(op1.Count < op2.Count)
+        {
+            var items = SameLen(op2, op1);
+            op2 = items[0];
+            op1 = items[1];
+        }
+        while (op2.Count != op1.Count)
+            op2.Add(new Item("", "", ""));
+        return [op1, op2];
+    }
+
+    private static string RemoveStrings(string code)
     {
         var newStr = "";
         var index = 0;
@@ -76,20 +103,20 @@ class Parser
         return newStr;
     }
 
-    private string RemoveUseless(string code)
+    private static string RemoveUseless(string code)
     {
         Regex reg = new("else if");
         return reg.Replace(code, "");
     }
 
-    private List<string> GetVariables(string code)
+    private static List<string> GetVariables(string code)
     {
         Regex reg = new("(var|val)( +)(.+)( *):");
         var matches = reg.Matches(code);
         return (from elem in matches select elem.Groups[3].ToString()).ToList();
     }
 
-    private List<string> GetFunctions(string code)
+    private static List<string> GetFunctions(string code)
     {
         Regex reg = new(@"(def)( +)(.+)( *)\(");
         var matches = reg.Matches(code);
@@ -115,20 +142,12 @@ class Parser
                 
             }
             if (operands[item] == 0) operands.Remove(item);
-            /*if (count > 0)
-            {
-                operators[item] = 1;
-                if (count > 1)
-                {
-                    operands[item] = count - 1;
-                }
-            }*/
         }
     }
 
     private void CountVariables(string code)
     {
-        var vars = GetVariables(code);
+        var vars = Parser.GetVariables(code);
         foreach (var item in vars)
         { 
             Regex reg = new Regex($@"\W({item})\W");

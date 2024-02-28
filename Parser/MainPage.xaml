@@ -18,9 +18,14 @@
                 Margin="10"
                     VerticalOptions="Start"
                 HorizontalOptions="Fill" />
-            <Grid ColumnDefinitions="*,*" Margin="10, 0, 10, 0">
+            <Grid ColumnDefinitions="*,*" RowDefinitions="*,*" Margin="10, 0, 10, 0">
                 <CollectionView x:Name="List1" Grid.Column="0" Grid.Row="0"/>
                 <CollectionView x:Name="List2" Grid.Column="1" Grid.Row="0"/>
+                <VerticalStackLayout x:Name="Metrics" Grid.Column="0" Grid.Row="1">
+                    <Label x:Name="prog_dict" FontSize="14" Margin="10" TextColor="#000" HorizontalOptions="Center" />
+                    <Label x:Name="prog_len" FontSize="14" Margin="10" TextColor="#000" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+                <Label x:Name="prog_volume" FontSize="14" Margin="10" TextColor="#000" HorizontalOptions="Center" Grid.Column="1" Grid.Row="1" />
             </Grid>
                 
         </VerticalStackLayout>
