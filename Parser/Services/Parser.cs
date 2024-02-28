@@ -1,27 +1,21 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using System.Text;
 using System.Diagnostics;
+using System.Collections.Immutable;
 
 namespace Parser;
 
-public class ParserEntry
+public class Item
 {
-    public static void Parse()
+    public string Index { get; set; }
+    public string Name { get; set; }
+    public string Count { get; set; }
+    public Item(string index, string name, string count)
     {
-        string path = @"D:\LabsC#\parser\Parser\Services\test.txt";
-        Debug.WriteLine(path);
-        string text = "";
-        using (FileStream fstream = File.OpenRead(path))
-        {
-            byte[] buffer = new byte[fstream.Length];
-            fstream.Read(buffer, 0, buffer.Length);
-            text = Encoding.Default.GetString(buffer);
-        }
-        Parser p = new();
-        p.ParseScala(text);
+        Name = name;
+        Index = index;
+        Count = count;
     }
-
-
 }
 
 class Parser
@@ -30,7 +24,7 @@ class Parser
     string[] keyWords = ["case", "def", "do", "extends", "for", "forSome", "if", "import", "lazy", "match", "new", "package", "return", "sealed", "throw", "try", "type", "val", "var", "while", "with", "yield"];
     Dictionary<string, int> operators = new();
     Dictionary<string, int> operands = new();
-    public void ParseScala(string code)
+    public List<List<Item>> ParseScala(string code)
     {
         Console.WriteLine(code);
 
@@ -47,16 +41,22 @@ class Parser
 
 
 
-        Debug.WriteLine("ALL OPERATORS");
-        foreach (var item in operators)
+        var op1 = new List<Item>();
+        op1.Add(new Item("индекс", "оператор", "количество"));
+        var newoperators = from entry in operators orderby entry.Value descending select entry;
+        for (int i = 0; i < newoperators.Count(); i++)
         {
-            Debug.WriteLine($"{item.Key} : {item.Value}");
+            if (newoperators.ElementAt(i).Value > 0) op1.Add(new Item((i+1).ToString(), newoperators.ElementAt(i).Key, newoperators.ElementAt(i).Value.ToString()));
         }
-        Debug.WriteLine("\nALL OPERANDS");
-        foreach (var item in operands)
+
+        var op2 = new List<Item>();
+        op2.Add(new Item("индекс", "операнд", "количество"));
+        var newoperands = from entry in operands orderby entry.Value descending select entry;
+        for (int i = 0; i < newoperands.Count(); i++)
         {
-            Debug.WriteLine($"{item.Key} : {item.Value}");
+            if (newoperands.ElementAt(i).Value > 0) op2.Add(new Item((i+1).ToString(), newoperands.ElementAt(i).Key, newoperands.ElementAt(i).Value.ToString()));
         }
+        return new List<List<Item>> { op1, op2 };
     }
 
     private string RemoveStrings(string code)
@@ -112,6 +112,7 @@ class Parser
                    ++operands[item];
                 }
                 ++operators[item];
+                
             }
             if (operands[item] == 0) operands.Remove(item);
             /*if (count > 0)
@@ -143,10 +144,8 @@ class Parser
         foreach (Match item in reg.Matches(code))
         {
             var bebra = item.Groups[1].Value;
-            Debug.WriteLine($"----------- {bebra}");
             if (bebra == "" || allOperators.Contains(bebra) || onlyBrackets.IsMatch(bebra))
             {
-                Debug.WriteLine($"=========== {item.Value}");
                 operators["()"] += item.Groups[3].Length;
             }
 
