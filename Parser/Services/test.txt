@@ -101,6 +101,7 @@ object BasicsMain {
 
     val sumResult = sum(10,25.5) + sum(1,1,1)
     println(sumResult)
+    val govno = sum() + sum()
 
     println(trim("  bilisim.io  "))
 

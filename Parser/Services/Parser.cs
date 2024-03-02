@@ -130,7 +130,7 @@ class Parser
         var funcs = GetFunctions(code);
         foreach (var item in funcs)
         {
-            Regex reg = new($@"\W*({item})\W*");
+            Regex reg = new($@"\W*({item})\W");
             var matches = reg.Matches(code);
             operators[item] = 0;
             operands[item] = 0;
