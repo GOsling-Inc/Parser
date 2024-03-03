@@ -2,6 +2,7 @@
 using System.Text;
 using System.Diagnostics;
 using System.Collections.Immutable;
+using System;
 
 namespace Parser;
 
@@ -28,6 +29,7 @@ class Parser
 
         CountNumbers(code);
         CountFunctions(code);
+        CountClassMethods(code);
         CountVariables(code);
         CountKeyWords(code);
 
@@ -47,9 +49,9 @@ class Parser
                 op1.Add(new Item((i + 1).ToString(), newoperators.ElementAt(i).Key, newoperators.ElementAt(i).Value.ToString()));
                 counter += newoperators.ElementAt(i).Value;
             }
-        prog_dict += op1.Count();
+        prog_dict += op1.Count() - 1;
         prog_len += counter;
-        var statOperators = new Item($"n1 = {op1.Count() - 1}", "", $"N1 = {counter}");
+        var statOperators = new Item($"η1 = {op1.Count() - 1}", "", $"N1 = {counter}");
         counter = 0;
         var op2 = new List<Item>
         {
@@ -62,15 +64,15 @@ class Parser
                 op2.Add(new Item((i + 1).ToString(), newoperands.ElementAt(i).Key, newoperands.ElementAt(i).Value.ToString()));
                 counter += newoperands.ElementAt(i).Value;
             }
-        prog_dict += op2.Count();
+        prog_dict += op2.Count() - 1;
         prog_len += counter;
-        var statOperands = new Item($"n2 = {op2.Count() - 1}", "", $"N2 = {counter}");
+        var statOperands = new Item($"η2 = {op2.Count() - 1}", "", $"N2 = {counter}");
         var lists = SameLen(op1, op2);
         op1 = lists[0];
         op1.Add(statOperators);
         op2 = lists[1];
         op2.Add(statOperands);
-        return [op1, op2, [new Item(prog_dict.ToString(), prog_len.ToString(), (((int)(prog_len*Math.Log2(prog_dict)))).ToString())]];
+        return [op1, op2, [new Item(prog_dict.ToString(), prog_len.ToString(), Math.Ceiling(prog_len * Math.Log2(prog_dict)).ToString())]];
     }
 
     private static List<List<Item>> SameLen(List<Item> op1, List<Item> op2)
@@ -95,7 +97,7 @@ class Parser
         if (matches.Count == 0) return code;
         foreach (Match match in matches)
         {
-            newStr += code.Substring(index, match.Index - index);
+            newStr += code.Substring(index, match.Index - index) + " ";
             index = match.Index + match.Length;
         }
         newStr += code.Substring(matches[matches.Count - 1].Index + matches[matches.Count - 1].Length);
@@ -108,7 +110,9 @@ class Parser
         Regex reg = new("else if");
         code = reg.Replace(code, "");
         Regex reg2 = new(@"//.+");
-        return reg2.Replace(code, "");
+        code = reg2.Replace(code, "");
+        Regex reg3 = new(@"/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/");
+        return reg3.Replace(code, "");
     }
 
     private static List<string> GetVariables(string code)
@@ -159,13 +163,34 @@ class Parser
 
     private void CountNumbers(string code)
     {
-        Regex reg = new Regex($@"[0-9]+[.e-]*[0-9]*");
+        Regex reg = new($@"[^\w][0-9]+[.e-]*[0-9]*");
         foreach (Match match in reg.Matches(code))
         {
-            if (!operands.ContainsKey(match.Value)) operands[match.Value] = 0;
-            operands[match.Value]++;
+            string s = match.Value[1..];
+            if (!operands.ContainsKey(s)) operands[s] = 0;
+            operands[s]++;
         }
         
+    }
+
+    private void CountClassMethods(string code)
+    {
+        Regex reg = new(@"\W*[a-zA-Z]+[.][a-zA-Z]+\W*"); 
+        var classMethods = reg.Matches(code);
+        foreach (var item in classMethods)
+        {
+            Regex reg2 = new(@"[a-zA-Z]+[.][a-zA-Z]+");
+            string key = reg2.Match(item.ToString()).ToString();
+            if (item.ToString().EndsWith('.') || item.ToString().StartsWith('.')) return;
+            operators[key] = 0;
+            operands[key] = 0;
+            if (allOperators.Any(op => item.ToString().Contains(op)))
+            {
+                    ++operands[key];
+            }
+             ++operators[key];
+            if (operands[key] == 0) operands.Remove(key);
+        }
     }
 
     private void CountBrackets(string code)
@@ -182,7 +207,7 @@ class Parser
             }
 
         }
-
+        if (operators["()"] == 0) operators.Remove("()");
     }
 
     private void CountDefaultOperators(string code)
@@ -192,9 +217,9 @@ class Parser
             var newItem = "";
             foreach (var i in item)
             {
-                newItem += $"\\{i}";
+                newItem += $@"\{i}";
             }
-            Regex operatorsReg = new Regex($"[0-9a-zA-Z\r\n ]({newItem})[0-9a-zA-Z\r\n ]");
+            Regex operatorsReg = new($"[0-9a-zA-Z\r\n ]({newItem})[0-9a-zA-Z\r\n ]");
             operators[item] = operatorsReg.Matches(code).Count();
         }
         Regex point = new Regex(@"[a-zA-Z]+[a-zA-Z0-9_]*(\.)[a-zA-Z]+[a-zA-Z0-9_]*");

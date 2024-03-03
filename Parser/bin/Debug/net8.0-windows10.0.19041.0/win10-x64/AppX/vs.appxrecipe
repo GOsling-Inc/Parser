@@ -30,13 +30,13 @@
     <AppXManifest Include="D:\LabsC#\parser\Parser\bin\Debug\net8.0-windows10.0.19041.0\win10-x64\AppxManifest.xml">
       <PackagePath>AppxManifest.xml</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2024-03-02T06:12:39.999</Modified>
+      <Modified>2024-03-03T16:13:10.459</Modified>
     </AppXManifest>
   </ItemGroup>
   <ItemGroup>
     <AppxPackagedFile Include="D:\LabsC#\parser\Parser\bin\Debug\net8.0-windows10.0.19041.0\win10-x64\resources.pri">
       <PackagePath>resources.pri</PackagePath>
-      <Modified>2024-03-02T05:51:36.291</Modified>
+      <Modified>2024-03-03T16:13:10.397</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="D:\LabsC#\parser\Parser\bin\Debug\net8.0-windows10.0.19041.0\win10-x64\Parser.runtimeconfig.json">
       <PackagePath>Parser.runtimeconfig.json</PackagePath>
@@ -44,11 +44,11 @@
     </AppxPackagedFile>
     <AppxPackagedFile Include="D:\LabsC#\parser\Parser\bin\Debug\net8.0-windows10.0.19041.0\win10-x64\Parser.dll">
       <PackagePath>Parser.dll</PackagePath>
-      <Modified>2024-03-02T06:12:39.059</Modified>
+      <Modified>2024-03-03T16:13:10.051</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="D:\LabsC#\parser\Parser\obj\Debug\net8.0-windows10.0.19041.0\win10-x64\apphost.exe">
       <PackagePath>Parser.exe</PackagePath>
-      <Modified>2024-03-02T06:12:39.184</Modified>
+      <Modified>2024-03-03T16:13:10.224</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="D:\LabsC#\parser\Parser\Resources\Raw\AboutAssets.txt">
       <PackagePath>AboutAssets.txt</PackagePath>
